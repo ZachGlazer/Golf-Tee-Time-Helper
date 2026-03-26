@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Source Sans 3', sans-serif; background: #f4f4f0; color: #1a1a1a; }
+  header { background: #1a5c2e; color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.1rem; font-weight: 500; }
+  header a { color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; }
+  .stats { display: flex; gap: 1rem; padding: 1.5rem 2rem; flex-wrap: wrap; }
+  .stat { background: white; border-radius: 10px; border: 1px solid #ddd; padding: 1rem 1.25rem; min-width: 140px; }
+  .stat-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-value { font-size: 1.75rem; font-weight: 500; color: #1a5c2e; margin-top: 2px; }
+  .table-wrap { padding: 0 2rem 2rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; font-size: 14px; }
+  th { background: #f9f9f6; text-align: left; padding: 0.75rem 1rem; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; border-bottom: 1px solid #eee; }
+  td { padding: 0.75rem 1rem; border-bottom: 1px solid #f0f0ec; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .badge-active { background: #e8f5ec; color: #1a5c2e; }
+  .badge-paused { background: #f5f0e8; color: #7a5c00; }
+  .action-link { font-size: 12px; color: #1a5c2e; text-decoration: none; margin-right: 10px; }
+  .action-link.red { color: #c0392b; }
+  .empty { text-align: center; padding: 2rem; color: #999; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ibis Tee Time Alerts — Admin</h1>
+  <a href="/admin/logout">Sign out</a>
+</header>
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total members</div><div class="stat-value">{{ members|length }}</div></div>
+  <div class="stat"><div class="stat-label">Active</div><div class="stat-value">{{ members|selectattr('active')|list|length }}</div></div>
+  <div class="stat"><div class="stat-label">Paused</div><div class="stat-value">{{ members|rejectattr('active')|list|length }}</div></div>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Email</th><th>Phone</th><th>Time window</th><th>Dates</th><th>Min players</th><th>Status</th><th>Signed up</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% if members %}{% for m in members %}
+      <tr>
+        <td>{{ m.ibis_email }}</td><td>{{ m.phone }}</td>
+        <td>{{ m.earliest_time }} – {{ m.latest_time }}</td>
+        <td>{{ m.dates if m.dates else 'Any' }}</td>
+        <td>{{ m.min_players }}</td>
+        <td><span class="badge {{ 'badge-active' if m.active else 'badge-paused' }}">{{ 'Active' if m.active else 'Paused' }}</span></td>
+        <td>{{ m.created_at.strftime('%b %d, %Y') }}</td>
+        <td>
+          <a href="/admin/toggle/{{ m.id }}" class="action-link">{{ 'Pause' if m.active else 'Resume' }}</a>
+          <a href="/admin/delete/{{ m.id }}" class="action-link red" onclick="return confirm('Delete this member?')">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}{% else %}
+      <tr><td colspan="8" class="empty">No members signed up yet.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
